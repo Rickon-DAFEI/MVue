@@ -6,7 +6,18 @@ const compileUtil = {
         },vm.$data);
     },
     text(node,expr,vm){
-        const value = this.getVal(expr,vm);
+        let value;
+        if(expr.indexOf('{{')!=-1){
+            //{{person.name}}-{{person.val}}
+            value = expr.replace(/\{\{(.+?)\}\}/g,(...args)=>{
+                console.log(args);
+            })
+
+        }
+        else{
+            value = this.getVal(expr,vm);
+        }
+        
         this.updater.textUpdater(node,value)
     },
     html(node,expr,vm){
@@ -66,7 +77,7 @@ class Compile{
                 //文本节点
                 //
                 // this.childNodes
-                this.compileText();
+                this.compileText(child);
                 // console.log('文本节点',child);
                 
             }
@@ -87,13 +98,22 @@ class Compile{
                 // console.log(dirctive);
                 const [dirName,eventName] = dirctive.split(':');
                 // console.log(dirName)
+                //更新数据 数据驱动视图
                 compileUtil[dirName](node,value,this.vm,eventName)
+                //删除有指令的标签上的属性
+                node.removeAttribute('v-'+dirctive)
             }
         })
         // console.log(node)
     }
     compileText(node){
-
+        // console.log()
+        //正则匹配
+        const content = node.textContent
+        if(/\{\{(.+?)\}\}/.test(content)){
+            compileUtil['text'](node,content,this.vm);
+            console.log(content)
+        }
     }
     isDirective(attrName){
         return (attrName.startsWith('v-'));
