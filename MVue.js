@@ -1,10 +1,51 @@
+const compileUtil = {
+    getVal(expr,vm){//处理 调用对象中的属性 如 v-text = person.val
+        return expr.split('.').reduce((data,currentVal)=>{
+            console.log(currentVal);
+            return data[currentVal]
+        },vm.$data);
+    },
+    text(node,expr,vm){
+        const value = this.getVal(expr,vm);
+        this.updater.textUpdater(node,value)
+    },
+    html(node,expr,vm){
+        const value = this.getVal(expr,vm);
+        this.updater.htmlUpdater(node,value);
+        // this.updater.appendNode(node,value)
+    },
+
+    model(node,expr,vm){
+        const value = this.getVal(expr,vm);
+        this.updater.modelupdater(node,value);
+
+    },
+    on(node,expr,vm,eventName){
+
+    },
+    //更新函数
+    updater:{
+        modelupdater(node,value){
+            node.value = value;
+        },
+        textUpdater(node,value){
+          node.textContent = value;
+        },
+        appendNode(node,value){
+        //   node.appendChild(value);
+        },
+        htmlUpdater(node,value){
+          node.textContent = value;
+        }
+    }
+} 
 class Compile{
     constructor(el,vm){
         this.el = this.isElementNode(el)?el:document.querySelector(el);
-        this,vm = vm;
+        this.vm = vm;
         //console.log(this.el);
         const fragment = this.node2Fragment(this.el);
-        console.log(fragment);
+        // console.log(fragment);
         this.compile(fragment);
         //追加子元素到跟元素
         this.el.appendChild(fragment)
@@ -14,22 +55,48 @@ class Compile{
         //1.获取子节点
         const childNodes = fragment.childNodes;
         [...childNodes].forEach(child=>{
-            console.log(child);
+            // console.log(child);
             if(this.isElementNode(child)){
                 //是元素节点
                 //编译元素节点
-                console.log('是元素节点',child);
+                this.compileElement(child);
+                // console.log('是元素节点',child);
 
             }else{
                 //文本节点
                 //
-                console.log('文本节点',child);
+                // this.childNodes
+                this.compileText();
+                // console.log('文本节点',child);
                 
             }
             if(child.childNodes&&child.childNodes.length){
                 this.compile(child);
             }
         })
+    }
+    compileElement(node){
+        // console.log(node);
+        // <div v-text='msg'></div>
+        const attributes = node.attributes;
+        [...attributes].forEach(attr=>{
+            const {name,value} = attr;
+            // console.log(name);
+            if(this.isDirective(name)){
+                const [,dirctive] = name.split('-')   //v-on:click
+                // console.log(dirctive);
+                const [dirName,eventName] = dirctive.split(':');
+                // console.log(dirName)
+                compileUtil[dirName](node,value,this.vm,eventName)
+            }
+        })
+        // console.log(node)
+    }
+    compileText(node){
+
+    }
+    isDirective(attrName){
+        return (attrName.startsWith('v-'));
     }
     node2Fragment(el){
         //创建文档碎片对象
@@ -46,6 +113,9 @@ class Compile{
         return node.nodeType === 1;  
     }
 }
+
+
+
 class MVue{
     constructor(options){
         this.$el = options.el;
