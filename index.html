@@ -21,6 +21,9 @@
         <div v-text = 'msg'></div>
         <div v-html='htmlStr'></div>
         <input type="text" v-model='msg'>
+        <button v-on:click="handleClick">按钮ON</button>
+        <button @click="handleClick">按钮@</button>
+        <a v-bind:href="url">测试跳转</a>
     </div>
     <script src="./MVue.js">
 
@@ -31,10 +34,18 @@
             data:{
                 person:{
                     age:18,
-                    fav:'某'
+                    name:"赵鑫鑫",
+                    fav:'最爱的东西',
+                    
                 },
+                url:"https://www.baidu.com",
                 msg:'实现v-text',
                 htmlStr:"这里是添加的v-html"
+            },
+            methods:{
+                handleClick(){
+                    console.log(this);
+                }
             }
         })
     </script>

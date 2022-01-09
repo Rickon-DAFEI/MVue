@@ -1,20 +1,23 @@
 const compileUtil = {
     getVal(expr,vm){//处理 调用对象中的属性 如 v-text = person.val
         return expr.split('.').reduce((data,currentVal)=>{
-            console.log(currentVal);
+          //  console.log(currentVal);
             return data[currentVal]
         },vm.$data);
     },
     text(node,expr,vm){
         let value;
         if(expr.indexOf('{{')!=-1){
+          //  console.log(expr)
             //{{person.name}}-{{person.val}}
             value = expr.replace(/\{\{(.+?)\}\}/g,(...args)=>{
-                console.log(args);
+                //console.log(args,"----------");
+                
+                return this.getVal(args[1],vm);
             })
 
         }
-        else{
+        else{ 
             value = this.getVal(expr,vm);
         }
         
@@ -32,12 +35,22 @@ const compileUtil = {
 
     },
     on(node,expr,vm,eventName){
-
+        let fn = vm.$options.methods && vm.$options.methods[expr];
+        node.addEventListener(eventName,fn.bind(vm),false);
+    },
+    bind(node,expr,vm,eventName){
+        console.log(expr);
+        const value = this.getVal(expr,vm);
+        // console.log(value);
+        this.updater.bindUpdater(node,value,eventName);
     },
     //更新函数
     updater:{
         modelupdater(node,value){
             node.value = value;
+        },
+        bindUpdater(node,value,eventName){
+            node.setAttribute(eventName,value);
         },
         textUpdater(node,value){
           node.textContent = value;
@@ -96,12 +109,16 @@ class Compile{
             if(this.isDirective(name)){
                 const [,dirctive] = name.split('-')   //v-on:click
                 // console.log(dirctive);
-                const [dirName,eventName] = dirctive.split(':');
+                const [dirName,tagName] = dirctive.split(':');
                 // console.log(dirName)
                 //更新数据 数据驱动视图
-                compileUtil[dirName](node,value,this.vm,eventName)
+                compileUtil[dirName](node,value,this.vm,tagName)
                 //删除有指令的标签上的属性
                 node.removeAttribute('v-'+dirctive)
+            }
+            else if(this.isEventName(name)){
+                let[,event] = name.split("@");
+                compileUtil['on'](node,value,this.vm,event);
             }
         })
         // console.log(node)
@@ -112,8 +129,11 @@ class Compile{
         const content = node.textContent
         if(/\{\{(.+?)\}\}/.test(content)){
             compileUtil['text'](node,content,this.vm);
-            console.log(content)
+          //  console.log(content)
         }
+    }
+    isEventName(attrName){
+        return (attrName.startsWith('@'));
     }
     isDirective(attrName){
         return (attrName.startsWith('v-'));
