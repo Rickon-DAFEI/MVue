@@ -229,19 +229,23 @@
 > >>* 
 > >
 > >>```
+> >>
+> >>```
 > >
 > >>function copy(arr){
 > >>var obj=arr.constructor==Array?[]:{};　　//第二种方法 var obj=arr instanceof Array?[]:{}　　//第三种方法 		 var obj=Array.isArray(arr)?[]:{}　　for(var item in arr){
-> >>   if(typeof arr[item]==="object"){
-> >>       obj[item]=copy(arr[item]);
-> >>   }else{
-> >>       obj[item]=arr[item];
-> >>   }
+> >>if(typeof arr[item]==="object"){
+> >>  obj[item]=copy(arr[item]);
+> >>}else{
+> >>  obj[item]=arr[item];
+> >>}
 > >>}
 > >>return obj;
 > >>}
 > >>var obj={a:1,b:2,c:{d:1,e:[3,4,5]}}
 > >>var newobj=copy(obj);
+> >>
+> >>```
 > >>
 > >>```
 > >
@@ -348,6 +352,12 @@ HTTPS加密原理
 
 ### Vue 源码 
 
+
+
+![](C:\Users\1\MVue\1641795026(1).jpg)
+
+
+
 数据=>视图
 
 视图=>数据
@@ -441,6 +451,32 @@ compileUtil[dirName](node,value,this.vm,eventName)
 当reduce的第二个参数设置成0，index是从0开始的，第一个val是设置的值0
 
 结论：当设置reduce的第二个参数时，val的初始值是reduce的第二个参数值，index从0开始；反之，val的初始值是数组的第一个元素，index从1开始！！！
+
+
+
+```js
+new Observer(this.$data);	
+```
+
+
+
+
+
+```js
+this.defineReactive(data,key,data[key]);//劫持第一层
+```
+
+
+
+```js
+set(newVal){//this指向有问题 修改后： set:(newVal)=>
+   this.observe(newVal);//观察更新后数据
+   if(newVal!==value){
+        value = newVal;
+   }}
+```
+
+
 
 
 

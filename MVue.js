@@ -166,7 +166,7 @@ class MVue{
             //实现指令解析器
 
             new Compile(this.$el,this);
-
+            new Observer(this.$data);
         }
     }
 }
