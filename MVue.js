@@ -18,17 +18,20 @@ const compileUtil = {
         })
     },
     text(node, expr, vm) { //expr 可能是 {{obj.name}}--{{obj.age}} 
+        // console.log(expr)
         let val;
-        if (expr.indexOf('{{') !== -1) {
+        if (expr.indexOf('{{') != -1) {
             // 
             val = expr.replace(/\{\{(.+?)\}\}/g, (...args) => {
                 //绑定watcher从而更新视图
-                new Watcher(vm,args[1],()=>{           
+                new Watcher(vm,args[1],()=>{          
+                    // console.log(this.getContentVal(expr, vm)) 
                     this.updater.textUpdater(node,this.getContentVal(expr, vm));
                 })
                 return this.getVal(args[1], vm);
             })
         }else{ //也可能是v-text='obj.name' v-text='msg'
+            console.log(expr);
             val = this.getVal(expr,vm);
         }
         this.updater.textUpdater(node, val);
@@ -190,7 +193,19 @@ class MVue{
             //实现指令解析器
             new Observer(this.$data);
             new Compile(this.$el,this);
-            
+            this.proxyData(this.$data);
+        }
+    }
+    proxyData(data){
+        for(const key in data){
+            Object.defineProperty(this,key,{
+                get(){
+                    return data[key];
+                },
+                set(newVal){
+                    data[key] = newVal;
+                }
+            })
         }
     }
 }
