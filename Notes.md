@@ -480,7 +480,17 @@ set(newVal){//this指向有问题 修改后： set:(newVal)=>
 
 
 
+### Observer
 
+> 
+>
+> Object.defineProperty
+>
+> get()
+>
+> set()
+
+出现数据更新但是无法更新视图
 
 
 
